@@ -687,11 +687,22 @@ searchBtn.addEventListener('click', async () => {
     } else {
         // For library mode, we need to fetch the image and convert it to a file
         try {
-            const response = await fetch(`/images/${selectedLibraryImage}`);
+            const imageUrl = `/images/${selectedLibraryImage}`;
+            const response = await fetch(imageUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+            }
+            
             const blob = await response.blob();
+            
+            if (blob.size === 0) {
+                throw new Error('Image blob is empty');
+            }
+            
             formData.append('file', blob, selectedLibraryImage);
         } catch (error) {
-            errorDiv.textContent = 'Error: Failed to load image from library';
+            errorDiv.textContent = 'Error: Failed to load image from library - ' + error.message;
             errorDiv.style.display = 'block';
             return;
         }
@@ -709,10 +720,15 @@ searchBtn.addEventListener('click', async () => {
             body: formData
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Search failed');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Search failed');
+        }
+
+        const data = await response.json();
+        
+        if (!data.results) {
+            throw new Error('No results in response');
         }
 
         displayResults(data.results);

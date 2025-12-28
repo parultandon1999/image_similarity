@@ -274,7 +274,14 @@ def search():
     try:
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Ensure upload folder exists
+        Path(app.config['UPLOAD_FOLDER']).mkdir(exist_ok=True)
+        
         file.save(filepath)
+        
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Failed to save uploaded file'}), 500
         
         query_features = extract_features(filepath)
         similarities = cosine_similarity([query_features], all_features)[0]
@@ -292,11 +299,16 @@ def search():
                 'image_url': f'/images/{name}'
             })
         
-        os.remove(filepath)
+        # Clean up uploaded file
+        try:
+            os.remove(filepath)
+        except:
+            pass
+        
         return jsonify({'results': results})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Search error: {str(e)}'}), 500
 
 @app.route('/images/<filename>')
 def serve_image(filename):
