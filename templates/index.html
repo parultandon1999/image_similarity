@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Similarity Search</title>
+    <!-- Google Fonts: Roboto and Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Image Similarity Search</h1>
+            <p>Manage database & find similar images</p>
+        </div>
+
+        <div class="instructions-section">
+            <div class="instructions-card">
+                <h3>Getting Started</h3>
+                <div class="instructions-grid">
+                    <div class="instruction-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Upload Images</h4>
+                            <p>Go to Gallery tab and upload images by dragging and dropping or clicking the upload area. Supported formats: PNG, JPG, GIF, BMP.</p>
+                        </div>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Generate Features</h4>
+                            <p>Click the "Generate Features" button to extract deep learning features from all images. This creates a searchable database using ResNet50 AI model.</p>
+                        </div>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Search Similar Images</h4>
+                            <p>Go to Search tab, upload a reference image, and click "Search" to find the most similar images from your library with similarity scores.</p>
+                        </div>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Manage Library</h4>
+                            <p>Delete individual images or select multiple images for batch deletion. Your feature database updates automatically when images are removed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="gallery">Gallery</button>
+            <button class="tab-btn" data-tab="search">Search</button>
+        </div>
+
+        <div class="tab-content" id="gallery-tab">
+            <div class="gallery-section">
+                <div class="gallery-header">
+                    <h2>Library</h2>
+                    <div class="gallery-actions">
+                        <button class="btn btn-primary" id="generateBtn">
+                            <span class="material-icons">autorenew</span> Generate Features
+                        </button>
+                        <button class="btn btn-text-danger" id="deleteSelectedBtn" style="display: none;">
+                            Delete Selected (<span id="selectedCount">0</span>)
+                        </button>
+                        <button class="btn btn-text-danger" id="deleteAllBtn" style="display: none;">
+                            Delete All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="upload-area-gallery" id="uploadAreaGallery">
+                    <input type="file" id="fileInputGallery" accept="image/*" multiple>
+                    <span class="material-icons upload-icon">cloud_upload</span>
+                    <div class="upload-text">
+                        <h3>Drop files here or click to upload</h3>
+                        <p>Support for PNG, JPG, GIF, BMP</p>
+                    </div>
+                </div>
+                
+                <div class="loading" id="galleryLoading">
+                    <div class="spinner"></div>
+                    <p>Loading library...</p>
+                </div>
+                <div class="error" id="galleryError"></div>
+                
+                <div class="gallery-grid" id="galleryGrid"></div>
+                
+
+            </div>
+        </div>
+
+        <div class="tab-content" id="search-tab" style="display: none;">
+            <div class="search-container">
+                <div class="search-header">
+                    <div class="warning-message" id="warningMessage" style="display: none;">
+                        <div class="warning-content">
+                            <span class="material-icons">info</span>
+                            <p>Please generate features in the Gallery tab first.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="search-mode-tabs">
+                        <button class="search-mode-btn active" data-mode="upload">
+                            <span class="material-icons">cloud_upload</span> Upload Image
+                        </button>
+                        <button class="search-mode-btn" data-mode="library">
+                            <span class="material-icons">collections</span> Choose from Library
+                        </button>
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept="image/*">
+                        <span class="material-icons upload-icon">add_photo_alternate</span>
+                        <div class="upload-text">
+                            <h3>Upload Reference Image</h3>
+                            <p>Drag & drop or click to browse</p>
+                        </div>
+                    </div>
+
+                    <div class="library-selector" id="librarySelector" style="display: none;">
+                        <label for="libraryImageSelect">Select an image from your library:</label>
+                        <select id="libraryImageSelect">
+                            <option value="">-- Choose an image --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary full-width" id="searchBtn" disabled="disabled">
+                            <span class="material-icons">search</span> Search
+                        </button>
+                        <button class="btn btn-outlined full-width" id="removeBtn" disabled="disabled">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing...</p>
+                    </div>
+                    <div class="error" id="error"></div>
+                </div>
+                
+                <div class="upload-section-right" id="previewSection">
+                    <img id="previewImage" style="display: none;">
+                    <div id="previewText" class="placeholder-text">
+                        <span class="material-icons">image_not_supported</span>
+                        <p>No image selected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="results-grid" id="resultsGrid"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="imageModal" class="image-modal">
+        <span class="material-icons close">&times;</span>
+        <div class="modal-content">
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="image-caption" id="imageCaption"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
