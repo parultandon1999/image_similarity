@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: image-similarity-search
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    routes:
+      - path: /
+        matchType: prefix
+    staticPublicPath: /templates
+    disk:
+      name: image-storage
+      mountPath: /var/data
+      sizeGB: 10
+    maxInstances: 1
+    minInstances: 1
+    healthCheckPath: /
+    preDeployCommand: |
+      mkdir -p /var/data/images
+      mkdir -p /var/data/uploads
+      if [ ! -f /var/data/original_features.npy ]; then
+        echo "Note: Pre-computed features not found. Generate them after deployment."
+      fi
